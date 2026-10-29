@@ -106,3 +106,7 @@ docs/latex/
 
 # macOS
 .DS_Store
+
+# pixi
+.pixi
+install

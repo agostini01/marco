@@ -1,0 +1,32 @@
+# CMake package for the installed MARCO libraries.
+#
+# Provides:
+#   MARCO_INCLUDE_DIRS   Include directories of the MARCO headers.
+#   MARCO_LLVM_VERSION   LLVM version MARCO was built against.
+#   marco::<library>     Imported targets, e.g. marco::MLIRBaseModelica,
+#                        marco::MLIRBaseModelicaTransforms, marco::modeling.
+
+include(CMakeFindDependencyMacro)
+
+set(MARCO_LLVM_VERSION "@LLVM_PACKAGE_VERSION@")
+
+# The imported targets link the LLVM/MLIR targets by name.
+find_dependency(MLIR CONFIG)
+
+if (NOT "${LLVM_PACKAGE_VERSION}" VERSION_EQUAL "${MARCO_LLVM_VERSION}")
+  message(WARNING "MARCO was built against LLVM ${MARCO_LLVM_VERSION}, "
+                  "but LLVM ${LLVM_PACKAGE_VERSION} was found")
+endif()
+
+# The parser and variable filter libraries link Clang. Only needed when those
+# libraries are used, so only look for a Clang that matches the LLVM in use.
+if (NOT TARGET clangBasic AND EXISTS "${LLVM_DIR}/../clang/ClangConfig.cmake")
+  find_package(Clang QUIET CONFIG PATHS "${LLVM_DIR}/../clang" NO_DEFAULT_PATH)
+endif()
+
+get_filename_component(MARCO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+set(MARCO_INCLUDE_DIRS "${MARCO_INSTALL_PREFIX}/include")
+
+if (NOT TARGET marco::MLIRBaseModelica)
+  include("${CMAKE_CURRENT_LIST_DIR}/MARCOTargets.cmake")
+endif()

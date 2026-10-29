@@ -108,6 +108,14 @@ endif()
 # MARCO configuration
 #------------------------------------------------------------------------------
 
+# The driver and the frontend library rely on the Clang driver options added by
+# the marco-compiler/llvm-project fork. Disable them to build the dialects,
+# transformations, conversions and marco-opt against an upstream LLVM release.
+option(MARCO_ENABLE_DRIVER "Build the marco driver and the frontend library (requires the marco-compiler/llvm-project fork)" ON)
+
+# Unit tests download googletest at configure time.
+option(MARCO_BUILD_UNITTESTS "Build the unit tests" ON)
+
 # Shared libraries
 if (UNIX AND NOT APPLE)
 	set(MARCO_BUILD_SHARED_LIBS_DEFAULT ON)
@@ -259,16 +267,18 @@ endif()
 
 enable_testing()
 
-FetchContent_Declare(
-	googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.16.0)
+if (MARCO_BUILD_UNITTESTS)
+	FetchContent_Declare(
+		googletest
+		GIT_REPOSITORY https://github.com/google/googletest.git
+		GIT_TAG v1.16.0)
 
-set(INSTALL_GTEST OFF CACHE INTERNAL "")
+	set(INSTALL_GTEST OFF CACHE INTERNAL "")
 
-# For Windows: prevent overriding the parent project's compiler / linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+	# For Windows: prevent overriding the parent project's compiler / linker settings
+	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+	FetchContent_MakeAvailable(googletest)
+endif()
 
 # Define the default arguments to use with 'lit', and an option for the user to override
 set(LIT_ARGS_DEFAULT "-sv --max-time 300")
@@ -280,4 +290,7 @@ endif()
 set(LLVM_LIT_ARGS "${LIT_ARGS_DEFAULT}" CACHE STRING "Default options for lit")
 
 add_subdirectory(test)
-add_subdirectory(unittest)
+
+if (MARCO_BUILD_UNITTESTS)
+	add_subdirectory(unittest)
+endif()

@@ -1,0 +1,137 @@
+[workspace]
+name = "marco"
+description = "MARCO Modelica compiler built against the conda-forge LLVM/MLIR/Clang 22.1.8 release"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+preview = ["pixi-build"]
+
+[activation.env]
+# Use the conda-forge toolchain (the one LLVM was built with) even when the
+# host exports CC/CXX.
+CC = "$CONDA_PREFIX/bin/gcc"
+CXX = "$CONDA_PREFIX/bin/g++"
+
+################################################################################
+# Development workspace: build MARCO against the upstream llvmorg-22.1.8 release.
+#
+# The upstream Clang does not carry the driver options of the
+# marco-compiler/llvm-project fork, so the `marco` driver and the frontend
+# library are disabled (MARCO_ENABLE_DRIVER=OFF). The dialects, transformations,
+# conversions and marco-opt are built.
+#
+# The build and install directories are task arguments, e.g. to use the
+# chemical-compiler layout:
+#   pixi run install "$PWD/../../builds/marco/build" "$PWD/../../builds/marco/install"
+################################################################################
+[dependencies]
+mlir = "==22.1.8"
+llvmdev = "==22.1.8"
+clangdev = "==22.1.8"
+lit = "==22.1.8"
+cmake = ">=3.20"
+ninja = "*"
+cxx-compiler = "*"
+c-compiler = "*"
+python = "3.12.*"
+# Packages that LLVMConfig.cmake find_package()s.
+zlib = "*"
+zstd = "*"
+libxml2 = "*"
+
+[tasks.link-llvm-utils]
+# llvmdev installs FileCheck, not, count and split-file under libexec/llvm, but
+# lit only searches llvm_tools_dir ($CONDA_PREFIX/bin).
+cmd = """ln -sf \
+  "$CONDA_PREFIX/libexec/llvm/FileCheck" \
+  "$CONDA_PREFIX/libexec/llvm/not" \
+  "$CONDA_PREFIX/libexec/llvm/count" \
+  "$CONDA_PREFIX/libexec/llvm/split-file" \
+  "$CONDA_PREFIX/bin/""""
+description = "Expose the LLVM test utilities (FileCheck, not, ...) to lit"
+
+[tasks.configure]
+args = [
+  { arg = "build_dir", default = "$PIXI_PROJECT_ROOT/build/pixi-$PIXI_ENVIRONMENT_NAME" },
+  { arg = "install_dir", default = "$PIXI_PROJECT_ROOT/install/pixi-$PIXI_ENVIRONMENT_NAME" },
+]
+cmd = """cmake -G Ninja -S "$PIXI_PROJECT_ROOT" -B "{{ build_dir }}" \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_INSTALL_PREFIX="{{ install_dir }}" \
+  -DCMAKE_PREFIX_PATH="$CONDA_PREFIX" \
+  -DLLVM_DIR="$CONDA_PREFIX/lib/cmake/llvm" \
+  -DMLIR_DIR="$CONDA_PREFIX/lib/cmake/mlir" \
+  -DClang_DIR="$CONDA_PREFIX/lib/cmake/clang" \
+  -DLLVM_EXTERNAL_LIT="$CONDA_PREFIX/bin/lit" \
+  -DMARCO_ENABLE_DRIVER=OFF \
+  -DMARCO_BUILD_SHARED_LIBS=OFF \
+  -DMARCO_BUILD_UNITTESTS=OFF \
+  -DMARCO_BUILD_MLIR_DOCS=OFF"""
+depends-on = ["link-llvm-utils"]
+description = "Configure MARCO (driver disabled, static libraries)"
+
+[tasks.build]
+args = [
+  { arg = "build_dir", default = "$PIXI_PROJECT_ROOT/build/pixi-$PIXI_ENVIRONMENT_NAME" },
+  { arg = "install_dir", default = "$PIXI_PROJECT_ROOT/install/pixi-$PIXI_ENVIRONMENT_NAME" },
+]
+cmd = 'cmake --build "{{ build_dir }}"'
+depends-on = [{ task = "configure", args = ["{{ build_dir }}", "{{ install_dir }}"] }]
+description = "Build the MARCO libraries and tools"
+
+[tasks.check]
+args = [
+  { arg = "build_dir", default = "$PIXI_PROJECT_ROOT/build/pixi-$PIXI_ENVIRONMENT_NAME" },
+  { arg = "install_dir", default = "$PIXI_PROJECT_ROOT/install/pixi-$PIXI_ENVIRONMENT_NAME" },
+]
+cmd = 'cmake --build "{{ build_dir }}" --target check'
+depends-on = [{ task = "configure", args = ["{{ build_dir }}", "{{ install_dir }}"] }]
+description = "Build MARCO and run the lit regression tests"
+
+[tasks.install]
+args = [
+  { arg = "build_dir", default = "$PIXI_PROJECT_ROOT/build/pixi-$PIXI_ENVIRONMENT_NAME" },
+  { arg = "install_dir", default = "$PIXI_PROJECT_ROOT/install/pixi-$PIXI_ENVIRONMENT_NAME" },
+]
+cmd = 'cmake --build "{{ build_dir }}" --target install'
+depends-on = [{ task = "configure", args = ["{{ build_dir }}", "{{ install_dir }}"] }]
+description = "Build and install MARCO into the install directory"
+
+################################################################################
+# Conda package (pixi-build). Other pixi workspaces consume MARCO as a source
+# dependency, e.g.
+#   marco = { git = "https://github.com/<user>/marco", branch = "chemcomp-llvm22" }
+#   marco = { path = "../external/marco" }
+# and `pixi install` builds it. `pixi build` writes the .conda file.
+################################################################################
+[package]
+name = "marco"
+version = "0.0.1"
+
+[package.build.backend]
+name = "pixi-build-cmake"
+version = "*"
+
+[package.build.config]
+extra-args = [
+  "-DCMAKE_BUILD_TYPE=Release",
+  "-DMARCO_VERSION=0.0.1",
+  "-DMARCO_ENABLE_DRIVER=OFF",
+  "-DMARCO_BUILD_SHARED_LIBS=OFF",
+  "-DMARCO_BUILD_UNITTESTS=OFF",
+  "-DMARCO_BUILD_MLIR_DOCS=OFF",
+]
+
+[package.host-dependencies]
+mlir = "==22.1.8"
+llvmdev = "==22.1.8"
+clangdev = "==22.1.8"
+python = "3.12.*"
+zlib = "*"
+zstd = "*"
+libxml2 = "*"
+
+# The package ships static libraries and the CMake package; consumers link them
+# against the same LLVM/MLIR release.
+[package.run-dependencies]
+mlir = "==22.1.8"
+llvmdev = "==22.1.8"

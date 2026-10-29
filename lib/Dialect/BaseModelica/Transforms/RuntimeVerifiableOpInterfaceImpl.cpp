@@ -144,7 +144,10 @@ struct TensorExtractOpRuntimeVerifier
           TensorExtractOpRuntimeVerifier, TensorExtractOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<TensorExtractOp>(op);
 
     verifyIndexedAccess(builder, loc, castedOp.getTensor(),
@@ -160,7 +163,10 @@ struct TensorInsertOpRuntimeVerifier
           TensorInsertOpRuntimeVerifier, TensorInsertOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<TensorInsertOp>(op);
 
     verifyIndexedAccess(builder, loc, castedOp.getDestination(),
@@ -176,7 +182,10 @@ struct TensorInsertSliceOpRuntimeVerifier
           TensorInsertSliceOpRuntimeVerifier, TensorInsertSliceOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<TensorInsertSliceOp>(op);
 
     mlir::Value source = castedOp.getValue();
@@ -253,7 +262,10 @@ struct TensorViewOpRuntimeVerifier
           TensorViewOpRuntimeVerifier, TensorViewOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<TensorViewOp>(op);
 
     for (auto subscript : llvm::enumerate(castedOp.getSubscriptions())) {
@@ -325,7 +337,10 @@ struct DimOpRuntimeVerifier
                                                          DimOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<DimOp>(op);
 
     auto assertOp = builder.create<AssertOp>(
@@ -364,7 +379,10 @@ struct LoadOpRuntimeVerifier
                                                          LoadOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<LoadOp>(op);
 
     verifyIndexedAccess(builder, loc, castedOp.getArray(),
@@ -380,7 +398,10 @@ struct StoreOpRuntimeVerifier
                                                          StoreOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<StoreOp>(op);
 
     verifyIndexedAccess(builder, loc, castedOp.getArray(),
@@ -396,7 +417,10 @@ struct SubscriptionOpRuntimeVerifier
           SubscriptionOpRuntimeVerifier, SubscriptionOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<SubscriptionOp>(op);
 
     verifyIndexedAccess(builder, loc, castedOp.getSource(),
@@ -416,7 +440,10 @@ struct DivOpRuntimeVerifier
                                                          DivOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<DivOp>(op);
     verifyArgumentIsNotZero(builder, loc, castedOp.getRhs(),
                             "division by zero");
@@ -431,7 +458,10 @@ struct DivEWOpRuntimeVerifier
                                                          DivEWOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<DivEWOp>(op);
     mlir::Value rhs = castedOp.getRhs();
 
@@ -480,7 +510,10 @@ struct AcosOpRuntimeVerifier
                                                          AcosOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<AcosOp>(op);
     mlir::Value operand = castedOp.getOperand();
 
@@ -497,7 +530,10 @@ struct AsinOpRuntimeVerifier
                                                          AsinOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<AsinOp>(op);
     mlir::Value operand = castedOp.getOperand();
 
@@ -514,7 +550,10 @@ struct DivTruncOpRuntimeVerifier
           DivTruncOpRuntimeVerifier, DivTruncOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<DivTruncOp>(op);
     verifyArgumentIsNotZero(builder, loc, castedOp.getY(), "division by zero");
   }
@@ -528,7 +567,10 @@ struct LogOpRuntimeVerifier
                                                          LogOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<LogOp>(op);
     mlir::Value operand = castedOp.getOperand();
 
@@ -545,7 +587,10 @@ struct Log10OpRuntimeVerifier
                                                          Log10Op> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<Log10Op>(op);
     mlir::Value operand = castedOp.getOperand();
 
@@ -562,7 +607,10 @@ struct ModOpRuntimeVerifier
                                                          ModOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<ModOp>(op);
     verifyArgumentIsNotZero(builder, loc, castedOp.getY(), "division by zero");
   }
@@ -576,7 +624,10 @@ struct RemOpRuntimeVerifier
                                                          RemOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<RemOp>(op);
     verifyArgumentIsNotZero(builder, loc, castedOp.getY(), "division by zero");
   }
@@ -590,7 +641,10 @@ struct SizeOpRuntimeVerifier
                                                          SizeOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<SizeOp>(op);
 
     if (castedOp.hasDimension()) {
@@ -634,7 +688,10 @@ struct SqrtOpRuntimeVerifier
                                                          SqrtOp> {
   void generateRuntimeVerification(mlir::Operation *op,
                                    mlir::OpBuilder &builder,
-                                   mlir::Location loc) const {
+                                   mlir::Location loc,
+                                   llvm::function_ref<std::string(
+                                       mlir::Operation *, llvm::StringRef)>
+                                   /*generateErrorMessage*/) const {
     auto castedOp = mlir::cast<SqrtOp>(op);
 
     verifyArgumentIsPositive(builder, loc, castedOp.getOperand(), false,

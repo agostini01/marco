@@ -8,7 +8,6 @@ get_property(extension_libs GLOBAL PROPERTY MLIR_EXTENSION_LIBS)
 get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
 
 set(LIBS
-    marco::frontend
     ${dialect_libs}
     ${extension_libs}
     ${conversion_libs}
@@ -17,6 +16,12 @@ set(LIBS
     MLIRRegisterAllExtensions
     MLIRRegisterAllPasses
     MLIRToLLVMIRTranslationRegistration)
+
+if (MARCO_ENABLE_DRIVER)
+    # The frontend library provides the LLVM-IR level passes (e.g. aggressive-licm).
+    list(APPEND LIBS marco::frontend)
+    target_compile_definitions(marco-opt PRIVATE MARCO_ENABLE_DRIVER)
+endif()
 
 target_link_libraries(marco-opt PRIVATE ${LIBS})
 mlir_check_all_link_libraries(marco-opt)

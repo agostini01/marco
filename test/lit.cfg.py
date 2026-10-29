@@ -76,9 +76,13 @@ tool_dirs = [
 ]
 
 tools = [
-    "marco",
     "marco-opt"
 ]
+
+# The driver is only built when MARCO_ENABLE_DRIVER is ON.
+if config.marco_driver_enabled.upper() in ("ON", "1", "TRUE", "YES"):
+    config.available_features.add("marco-driver")
+    tools.append("marco")
 
 # Search for OMC.
 if lit.util.which("omc") != None:

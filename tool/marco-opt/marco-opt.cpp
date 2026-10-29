@@ -10,7 +10,9 @@
 #include "marco/Dialect/Runtime/Transforms/AllInterfaces.h"
 #include "marco/Dialect/Runtime/Transforms/Passes.h"
 #include "marco/Dialect/SUNDIALS/IR/Dialect.h"
+#ifdef MARCO_ENABLE_DRIVER
 #include "marco/Frontend/Passes.h"
+#endif
 #include "mlir/InitAllDialects.h"
 #include "mlir/InitAllExtensions.h"
 #include "mlir/InitAllPasses.h"
@@ -44,7 +46,9 @@ int main(int argc, char *argv[]) {
   mlir::bmodelica::registerBaseModelicaPasses();
   mlir::modelica::registerModelicaPasses();
   mlir::runtime::registerRuntimePasses();
+#ifdef MARCO_ENABLE_DRIVER
   marco::frontend::registerFrontendPasses();
+#endif
 
   // Register MLIR built-in transformations.
   mlir::registerAllPasses();

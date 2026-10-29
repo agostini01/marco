@@ -24,12 +24,15 @@ macro(marco_add_library name)
   llvm_add_library(${name} OUTPUT_NAME ${canonized_name} ${MARCO_LIB_TYPE} ${ARGN})
   add_library(marco::${name} ALIAS ${name})
 
+  # Use the same export set as add_mlir_library(), so that the MLIR libraries
+  # of MARCO and the MARCO libraries they link are exported together (see
+  # cmake/modules/CMakeLists.txt).
   install(TARGETS ${name}
+      EXPORT MLIRTargets
       COMPONENT ${name}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-  install(TARGETS ${name} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endmacro()
 
 # Declare a MARCO tool

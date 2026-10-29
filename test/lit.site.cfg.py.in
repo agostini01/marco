@@ -42,6 +42,9 @@ config.marco_obj_root = "@MARCO_BUILD_DIR@"
 config.marco_tools_dir = "@MARCO_TOOLS_DIR@"
 config.marco_libs_dir = "@MARCO_LIBS_DIR@"
 
+# Driver (marco) and frontend library.
+config.marco_driver_enabled = "@MARCO_ENABLE_DRIVER@"
+
 # Runtime library.
 config.marco_runtime_found = "@MARCORuntime_FOUND@"
 config.marco_runtime_lib_dir = "@MARCORuntime_LIB_PATH@"
